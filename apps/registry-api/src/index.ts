@@ -202,6 +202,27 @@ async function handleBadge(request: Request, env: Env, slug: string): Promise<Re
   return svg(renderBadge('MCPub', rightText, color));
 }
 
+async function handleScanUpdate(request: Request, env: Env, slug: string): Promise<Response> {
+  const apiKey = request.headers.get('x-api-key');
+  if (apiKey !== 'dev-seed-key') {
+    return json({ error: 'Unauthorized' }, 401);
+  }
+
+  const tool = await env.DB.prepare('SELECT * FROM tools WHERE slug = ?').bind(slug).first<any>();
+  if (!tool) return json({ error: 'Tool not found' }, 404);
+
+  const body = await request.json().catch(() => ({})) as { securityScore?: number; findings?: any[]; scannedAt?: string };
+
+  if (body.securityScore === undefined || body.securityScore === null) {
+    return json({ error: 'securityScore is required' }, 400);
+  }
+
+  const score = Math.max(0, Math.min(100, body.securityScore));
+  await env.DB.prepare('UPDATE tools SET security_score = ? WHERE slug = ?').bind(score, slug).run();
+
+  return json({ slug, securityScore: score, updated: true });
+}
+
 function formatStars(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
   return String(n);
@@ -237,6 +258,11 @@ export default {
         if (badgeMatch) {
           return handleBadge(request, env, badgeMatch[1]);
         }
+      }
+
+      if (path.startsWith('/api/tools/') && path.endsWith('/scan') && method === 'POST') {
+        const slug = path.replace('/api/tools/', '').replace('/scan', '');
+        return handleScanUpdate(request, env, slug);
       }
 
       if (path.startsWith('/api/tools/') && method === 'GET') {
