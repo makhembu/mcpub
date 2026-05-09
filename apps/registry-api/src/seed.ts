@@ -74,14 +74,7 @@ export async function handleSeed(request: Request, env: Env): Promise<Response> 
   const body = await request.json().catch(() => ({})) as { force?: boolean; tools?: any[] };
   const force = body.force === true;
 
-  const existing = await env.DB.prepare('SELECT COUNT(*) as count FROM tools').first<{ count: number }>();
-  if (existing && existing.count > 0 && !force) {
-    return new Response(JSON.stringify({
-      message: 'Database already seeded',
-      count: existing.count,
-      hint: 'Use { "force": true } to re-seed'
-    }), { headers: { 'content-type': 'application/json' } });
-  }
+  const hasTools = body.tools && body.tools.length > 0;
 
   if (force) {
     await env.DB.exec('DELETE FROM tools; DELETE FROM scan_results;');
