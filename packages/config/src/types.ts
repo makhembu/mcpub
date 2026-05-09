@@ -6,10 +6,13 @@ export interface MCPInstallEntry {
   url?: string;
 }
 
+export type ConfigFormat = 'standard' | 'opencode';
+
 export interface MCPClientConfig {
   name: string;
   configPath: string;
   configKey: string;
+  format: ConfigFormat;
   detected: boolean;
 }
 

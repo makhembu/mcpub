@@ -1,0 +1,36 @@
+name: Weekly Security Scan
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+jobs:
+  run-batch-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Batch scan all tools
+        run: npx tsx scripts/batch-scan.ts
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          SCAN_DELAY: '50'
+          SCAN_CONCURRENCY: '10'
+
+      - name: Deep scan top tools with GitHub URLs
+        run: npx tsx scripts/scan-tools.ts --limit 100
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          GITHUB_TOKEN: ${{ secrets.GH_DISCOVERY_TOKEN }}

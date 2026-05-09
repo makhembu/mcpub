@@ -8,6 +8,9 @@
     "cli": "node apps/cli/dist/index.js",
     "discover": "npx tsx scripts/discover.ts",
     "seed-from-file": "npx tsx scripts/seed-from-file.ts",
+    "batch-scan": "npx tsx scripts/batch-scan.ts",
+    "deep-scan": "npx tsx scripts/scan-tools.ts",
+    "populate-embeddings": "npx tsx scripts/populate-embeddings.ts",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "lint": "eslint --ext .ts,.tsx apps/ packages/"
   },

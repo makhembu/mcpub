@@ -6,6 +6,7 @@ import type { MCPClientConfig } from '@mcpub/config';
 import { detectMCPClients, addToolToConfig } from '@mcpub/config';
 import { getRegistryUrl } from '../lib/registry.js';
 import { scanTool } from '../lib/scan.js';
+import { resolveInstallConfig } from '../lib/resolver.js';
 
 interface InstallOptions {
   yes?: boolean;
@@ -67,30 +68,48 @@ export async function installCommand(name: string, options: InstallOptions) {
     }
   }
 
-  if (!tool.installConfig) {
+  const resolveSpinner = ora('Verifying install config...').start();
+  const resolved = await resolveInstallConfig(tool);
+  resolveSpinner.stop();
+
+  if (!resolved) {
     const installCmd = tool.installCommand || `npx ${tool.npmPackage || tool.slug}`;
     console.log(`\n  ${chalk.bold('Install command:')}`);
     console.log(`  ${chalk.cyan('$ ' + installCmd)}`);
     console.log('');
-    console.log(`  ${chalk.dim(`Full details: ${chalk.underline(`${registryUrl}/tool/${tool.slug}`)}`)}`);
+    if (tool.githubUrl) {
+      console.log(`  ${chalk.dim(`See the GitHub repo for install instructions:`)}`);
+      console.log(`  ${chalk.underline(tool.githubUrl)}`);
+    }
+    console.log('');
+    console.log(`  ${chalk.dim(`Registry: ${chalk.underline(`${registryUrl}/tool/${tool.slug}`)}`)}`);
     return;
   }
 
   const installEntry = {
-    command: tool.installConfig.command,
-    args: tool.installConfig.args,
-    ...(tool.installConfig.env ? { env: tool.installConfig.env } : {}),
+    command: resolved.command,
+    args: resolved.args,
+    ...(resolved.env ? { env: resolved.env } : {}),
   };
+
+  const sourceLabels: Record<string, string> = {
+    registry: 'registry',
+    npm: 'npm registry (verified)',
+    readme: 'GitHub README (extracted)',
+    manual: 'manual',
+  };
+  console.log(`  ${chalk.dim('Source:')} ${sourceLabels[resolved.source] || resolved.source}`);
+  console.log(`  ${chalk.dim('Command:')} ${chalk.cyan(`$ ${resolved.command} ${resolved.args.join(' ')}`)}`);
 
   const clients = detectMCPClients();
   const detected = clients.filter(c => c.detected);
 
   if (detected.length === 0) {
-    console.log(chalk.yellow('⚠ No MCP clients detected on this machine.'));
+    console.log(chalk.yellow('\n⚠ No MCP clients detected on this machine.'));
     console.log(`Supported clients: ${clients.map(c => c.name).join(', ')}`);
     console.log('');
     console.log(`Manual install command:`);
-    console.log(`  ${chalk.cyan(`$ ${tool.installConfig.command} ${tool.installConfig.args.join(' ')}`)}`);
+    console.log(`  ${chalk.cyan(`$ ${resolved.command} ${resolved.args.join(' ')}`)}`);
     return;
   }
 
@@ -99,7 +118,7 @@ export async function installCommand(name: string, options: InstallOptions) {
   if (options.yes || detected.length === 1) {
     selectedClients = detected;
   } else {
-    console.log(chalk.bold('Found MCP clients:'));
+    console.log(chalk.bold('\nFound MCP clients:'));
     detected.forEach((c, i) => {
       const marker = c.detected ? chalk.green('●') : chalk.dim('○');
       console.log(`  [${i + 1}] ${marker} ${chalk.bold(c.name)} (${chalk.dim(c.configPath)})`);
@@ -153,10 +172,10 @@ export async function installCommand(name: string, options: InstallOptions) {
     console.log(`  ↻ ${reloadHint(client.name)}`);
   }
 
-  if (tool.installConfig?.env && Object.keys(tool.installConfig.env).length > 0) {
+  if (resolved.env && Object.keys(resolved.env).length > 0) {
     console.log('');
     console.log(chalk.yellow('⚠ This tool may require environment variables:'));
-    for (const [key, desc] of Object.entries(tool.installConfig.env)) {
+    for (const [key, desc] of Object.entries(resolved.env)) {
       console.log(`   ${chalk.bold(key)} — ${desc}`);
     }
   }

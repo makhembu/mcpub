@@ -14,6 +14,10 @@ let cjs = esmContent
     if (star) return `const ${name} = require('${source}');`;
     return `const ${name} = require('${source}');`;
   })
+  // Handle re-exports: export { ... } from './...'
+  .replace(/export\s+{\s*([^}]+)\s*}\s+from\s+['"]([^'"]+)['"]\s*;?\s*$/gm, (_, exports, source) => {
+    return `const { ${exports} } = require('${source}');\nmodule.exports = { ${exports} };`;
+  })
   .replace(/export\s+{\s*([^}]+)\s*}/g, (_, exports) => {
     return `module.exports = { ${exports} };`;
   })

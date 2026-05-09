@@ -125,12 +125,40 @@ function walkDir(dir: string): string[] {
   return entries;
 }
 
-async function main() {
-  const seedPath = resolve(__dirname, '../apps/registry-api/src/validated-seed.json');
-  const tools: ToolEntry[] = JSON.parse(readFileSync(seedPath, 'utf-8'));
+async function fetchToolList(): Promise<ToolEntry[]> {
+  const slugsRes = await fetch(`${REGISTRY_URL}/api/slugs`);
+  if (!slugsRes.ok) throw new Error(`GET /api/slugs returned ${slugsRes.status}`);
+  const slugs: string[] = await slugsRes.json();
 
-  const toolsToScan = tools.filter(t => t.githubUrl).slice(0, LIMIT);
-  console.log(`Scanning ${toolsToScan.length} tools...\n`);
+  const tools: ToolEntry[] = [];
+  for (const slug of slugs) {
+    try {
+      const res = await fetch(`${REGISTRY_URL}/api/tools/${encodeURIComponent(slug)}`);
+      if (!res.ok) continue;
+      const tool = await res.json() as any;
+      if (tool.githubUrl) {
+        tools.push({
+          slug: tool.slug,
+          name: tool.name,
+          githubUrl: tool.githubUrl,
+          description: tool.description || '',
+          shortDescription: tool.shortDescription || '',
+          npmPackage: tool.npmPackage || null,
+          pyPackage: tool.pyPackage || null,
+        });
+      }
+    } catch {
+      // skip unfetchable
+    }
+  }
+  return tools;
+}
+
+async function main() {
+  console.log(`Fetching tool list from ${REGISTRY_URL}...`);
+  const allTools = await fetchToolList();
+  const toolsToScan = allTools.slice(0, LIMIT);
+  console.log(`Found ${allTools.length} tools with GitHub URLs, scanning ${toolsToScan.length}...\n`);
 
   if (existsSync(SCAN_DIR)) {
     rmSync(SCAN_DIR, { recursive: true, force: true });
