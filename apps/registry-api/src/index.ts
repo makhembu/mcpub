@@ -1,8 +1,5 @@
-import { Router } from 'itty-router';
-import { handleSearch } from './search.js';
-import { handleToolDetail } from './tools.js';
-import { handleScan } from './scan.js';
 import { handleSeed } from './seed.js';
+import type { MCPTool } from '@mcpub/shared';
 
 export interface Env {
   DB: D1Database;
@@ -10,90 +7,160 @@ export interface Env {
   AI: Ai;
 }
 
-const router = Router();
+function json(data: any, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'content-type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
 
-// API v1 routes
-router.get('/api/search', handleSearch);
-router.get('/api/tools/:slug', handleToolDetail);
-router.get('/api/scan/:slug', handleScan);
-router.get('/api/health', () => new Response(JSON.stringify({ status: 'ok', version: '0.0.1' }), {
-  headers: { 'content-type': 'application/json' }
-}));
+function rowToTool(row: any): MCPTool {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    shortDescription: row.short_description,
+    githubUrl: row.github_url,
+    npmPackage: row.npm_package,
+    pyPackage: row.py_package,
+    homeUrl: row.home_url,
+    author: row.author,
+    stars: row.stars,
+    license: row.license,
+    createdAt: row.created_at,
+    lastUpdated: row.last_updated,
+    transports: JSON.parse(row.transports || '[]'),
+    categories: JSON.parse(row.categories || '[]'),
+    compatibility: JSON.parse(row.compatibility || '{}'),
+    securityScore: row.security_score,
+    installCommand: row.install_command,
+  };
+}
 
-// Seed endpoint (protected)
-router.post('/api/seed', handleSeed);
+async function handleSearch(request: Request, env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const query = url.searchParams.get('q') || '';
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+  const categoryFilter = url.searchParams.get('category');
+  const offset = parseInt(url.searchParams.get('offset') || '0', 10);
+  const startTime = Date.now();
 
-// Landing page
-router.get('/', () => {
-  const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MCPHub Registry</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 720px; margin: 80px auto; padding: 0 24px; line-height: 1.6; color: #333; }
-    h1 { font-size: 2.5rem; margin-bottom: 8px; }
-    .subtitle { color: #666; font-size: 1.1rem; margin-bottom: 40px; }
-    code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; }
-    .endpoints { list-style: none; padding: 0; }
-    .endpoints li { padding: 8px 0; border-bottom: 1px solid #eee; }
-    .endpoints li:last-child { border-bottom: none; }
-    .endpoint { color: #0066cc; font-weight: 600; }
-  </style>
-</head>
-<body>
-  <h1>⚡ MCPHub Registry API</h1>
-  <div class="subtitle">The npm for AI Tools — Registry backend</div>
-  <ul class="endpoints">
-    <li><span class="endpoint">GET /api/search?q=&lt;query&gt;</span> — Search MCP tools</li>
-    <li><span class="endpoint">GET /api/tools/:slug</span> — Get tool details</li>
-    <li><span class="endpoint">GET /api/scan/:slug</span> — Security scan a tool</li>
-    <li><span class="endpoint">GET /api/health</span> — Health check</li>
-  </ul>
-  <p style="margin-top: 40px; color: #888; font-size: 0.9rem;">
-    Use the CLI: <code>npx mcpub search &lt;query&gt;</code>
-  </p>
-</body>
-</html>`;
-  return new Response(html, { headers: { 'content-type': 'text/html;charset=UTF-8' } });
-});
+  let sql = 'SELECT * FROM tools WHERE 1=1';
+  const params: any[] = [];
 
-// 404
-router.all('*', () => new Response(JSON.stringify({ error: 'Not found' }), {
-  status: 404,
-  headers: { 'content-type': 'application/json' }
-}));
+  if (query) {
+    sql += ' AND (name LIKE ? OR short_description LIKE ? OR slug LIKE ?)';
+    params.push(`%${query}%`, `%${query}%`, `%${query}%`);
+  }
+  if (categoryFilter) {
+    sql += ' AND categories LIKE ?';
+    params.push(`%${categoryFilter}%`);
+  }
+
+  const countSql = sql.replace('SELECT *', 'SELECT COUNT(*) as total');
+  const countResult = await env.DB.prepare(countSql).bind(...params).first<{ total: number }>();
+  const total = countResult?.total || 0;
+
+  sql += ' ORDER BY stars DESC LIMIT ? OFFSET ?';
+  params.push(limit, offset);
+
+  const { results } = await env.DB.prepare(sql).bind(...params).all();
+  const tools = (results || []).map(rowToTool);
+  const took = Date.now() - startTime;
+
+  return json({ tools, total, query, limit, offset, took });
+}
+
+async function handleToolDetail(request: Request, env: Env, slug: string): Promise<Response> {
+  const tool = await env.DB.prepare('SELECT * FROM tools WHERE slug = ?').bind(slug).first();
+  if (!tool) return json({ error: 'Tool not found' }, 404);
+  return json(rowToTool(tool));
+}
+
+async function handleScan(request: Request, env: Env, slug: string): Promise<Response> {
+  const tool = await env.DB.prepare('SELECT * FROM tools WHERE slug = ?').bind(slug).first<any>();
+  if (!tool) return json({ error: 'Tool not found' }, 404);
+
+  const patterns = [
+    { id: 'pi-001', category: 'prompt-injection', name: 'Instruction Override', severity: 'high', description: 'Tool may allow instruction override from untrusted input' },
+    { id: 'pi-002', category: 'prompt-injection', name: 'Role Manipulation', severity: 'medium', description: 'Tool accepts role/persona definitions from external input' },
+    { id: 'de-001', category: 'data-exfiltration', name: 'Prompt Extraction', severity: 'critical', description: 'Tool exposes raw prompts or system messages' },
+    { id: 'de-002', category: 'data-exfiltration', name: 'Credential Harvesting', severity: 'critical', description: 'Tool requests or transmits credentials' },
+    { id: 'tp-001', category: 'tool-poisoning', name: 'Unsafe Command Execution', severity: 'high', description: 'Tool executes shell commands from parameters' },
+    { id: 'tp-002', category: 'tool-poisoning', name: 'Dynamic Code Execution', severity: 'high', description: 'Tool uses eval or dynamic code execution' },
+    { id: 'sc-001', category: 'supply-chain', name: 'Remote Code Fetch', severity: 'medium', description: 'Tool fetches and executes remote code' },
+    { id: 'mc-001', category: 'misconfiguration', name: 'Broad Filesystem Access', severity: 'medium', description: 'Tool has unrestricted filesystem access' },
+  ];
+
+  const issues = patterns.filter(p => {
+    const text = `${tool.name} ${tool.description} ${tool.install_command || ''}`.toLowerCase();
+    return text.includes(p.name.toLowerCase().split(' ')[0]);
+  });
+
+  const score = Math.max(0, 100 - issues.length * 12);
+
+  return json({
+    slug: tool.slug,
+    name: tool.name,
+    score,
+    severity: score >= 80 ? 'low' : score >= 50 ? 'medium' : 'high',
+    issues,
+    summary: issues.length > 0
+      ? `Found ${issues.length} potential security concerns`
+      : 'No significant security issues detected',
+  });
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    try {
-      const response = await router.handle(request, env, ctx);
-      if (!response) {
-        return new Response(JSON.stringify({ error: 'Not found' }), {
-          status: 404,
-          headers: { 'content-type': 'application/json' }
-        });
-      }
-      return addCors(response);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Internal error';
-      return new Response(JSON.stringify({ error: message }), {
-        status: 500,
-        headers: { 'content-type': 'application/json' }
+    const url = new URL(request.url);
+    const path = url.pathname;
+    const method = request.method;
+
+    if (method === 'OPTIONS') {
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
       });
     }
-  }
-};
 
-function addCors(response: Response): Response {
-  const newHeaders = new Headers(response.headers);
-  newHeaders.set('Access-Control-Allow-Origin', '*');
-  newHeaders.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  newHeaders.set('Access-Control-Allow-Headers', 'Content-Type');
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: newHeaders
-  });
-}
+    try {
+      if (path === '/api/health' || path === '/') {
+        return json({ status: 'ok', version: '0.0.1', name: 'MCPHub Registry API' });
+      }
+
+      if (path === '/api/search' && method === 'GET') {
+        return handleSearch(request, env);
+      }
+
+      if (path.startsWith('/api/tools/') && method === 'GET') {
+        const slug = path.replace('/api/tools/', '');
+        return handleToolDetail(request, env, slug);
+      }
+
+      if (path === '/api/scan' && method === 'GET') {
+        const slug = url.searchParams.get('slug') || '';
+        if (!slug) return json({ error: 'slug parameter required' }, 400);
+        return handleScan(request, env, slug);
+      }
+
+      if (path === '/api/seed' && method === 'POST') {
+        return handleSeed(request, env);
+      }
+
+      return json({ error: 'Not found' }, 404);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Internal error';
+      return json({ error: message }, 500);
+    }
+  },
+};
