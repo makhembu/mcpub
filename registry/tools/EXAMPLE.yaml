@@ -1,0 +1,14 @@
+# Submit your MCP server to MCPub
+# File name must match your tool slug (e.g. my-tool.yaml)
+# Create a PR with this file in registry/tools/ to submit.
+
+slug: my-mcp-tool
+name: My MCP Tool
+githubUrl: https://github.com/username/my-mcp-tool
+npmPackage: my-mcp-tool          # optional, set if published to npm
+pyPackage: my-mcp-tool           # optional, set if published to PyPI
+description: >
+  A one-paragraph description of what your MCP server does.
+  Be specific about what tools it exposes to AI agents.
+categories:
+  - developer-tools              # pick from: ai, developer-tools, database, browser-automation, communication, cloud, infrastructure, monitoring, security, utilities, productivity, search, web, storage, framework, testing, documentation, devops, backend, finance, design, social-media, learning

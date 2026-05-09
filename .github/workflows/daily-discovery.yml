@@ -1,0 +1,55 @@
+name: Daily MCP Discovery
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  discover-and-seed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Discover MCP tools
+        run: pnpm discover
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_DISCOVERY_TOKEN }}
+
+      - name: Validate tools
+        run: npx tsx scripts/validate-tools.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_DISCOVERY_TOKEN }}
+
+      - name: Seed registry (delta only)
+        run: npx tsx scripts/seed-from-file.ts --delta
+        env:
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          SEED_API_KEY: ${{ secrets.SEED_API_KEY }}
+
+      - name: Regenerate REGISTRY.md
+        run: npx tsx scripts/generate-registry-md.ts
+
+      - name: Commit updated files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: daily MCP discovery update [skip ci]"
+          file_pattern: apps/registry-api/src/validated-seed.json REGISTRY.md
+
+      - name: Upload validated seed as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: validated-seed-${{ github.run_id }}
+          path: apps/registry-api/src/validated-seed.json
+          retention-days: 30

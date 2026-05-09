@@ -343,6 +343,17 @@ pnpm discover
 pnpm seed-from-file
 ```
 
+## 🤖 Automated Discovery Setup
+
+To enable daily automated discovery, add these secrets to your GitHub repo
+(Settings → Secrets and Variables → Actions):
+
+| Secret | Description | How to get it |
+|--------|-------------|---------------|
+| `GH_DISCOVERY_TOKEN` | GitHub PAT for API access | [Create token](https://github.com/settings/tokens) with `public_repo` scope |
+| `REGISTRY_URL` | Your deployed Workers URL | e.g. `https://mcpub-registry.yourname.workers.dev` |
+| `SEED_API_KEY` | Registry seed API key | Set in Cloudflare Workers environment variables |
+
 ## 📦 Packages
 
 | Package | Description |

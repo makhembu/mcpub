@@ -270,6 +270,12 @@ export default {
         return handleToolDetail(request, env, slug);
       }
 
+      if (path === '/api/slugs' && method === 'GET') {
+        const { results } = await env.DB.prepare('SELECT slug FROM tools ORDER BY slug').all();
+        const slugs = (results || []).map((r: any) => r.slug);
+        return json(slugs);
+      }
+
       if (path === '/api/scan' && method === 'GET') {
         const slug = url.searchParams.get('slug') || '';
         if (!slug) return json({ error: 'slug parameter required' }, 400);

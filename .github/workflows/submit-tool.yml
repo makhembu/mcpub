@@ -1,0 +1,41 @@
+name: Validate Tool Submission
+
+on:
+  pull_request:
+    paths:
+      - 'registry/tools/*.yaml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate submitted tool
+        run: npx tsx scripts/validate-submission.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_DISCOVERY_TOKEN }}
+
+      - name: Post validation results as PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const result = JSON.parse(fs.readFileSync('validation-result.json', 'utf8'));
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: result.comment
+            });
