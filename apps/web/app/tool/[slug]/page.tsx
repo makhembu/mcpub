@@ -1,5 +1,3 @@
-const REGISTRY_URL = process.env.REGISTRY_URL || 'https://registry.mcpub.dev';
-
 interface Tool {
   slug: string;
   name: string;
@@ -23,7 +21,7 @@ interface Tool {
 
 async function getTool(slug: string): Promise<Tool | null> {
   try {
-    const res = await fetch(`${REGISTRY_URL}/api/tools/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`/api/tools/${slug}`, { next: { revalidate: 60 } });
     if (!res.ok) return null;
     return res.json();
   } catch {

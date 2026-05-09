@@ -1,5 +1,3 @@
-const REGISTRY_URL = process.env.REGISTRY_URL || 'https://registry.mcpub.dev';
-
 interface Tool {
   slug: string;
   name: string;
@@ -20,7 +18,7 @@ interface SearchResult {
 
 async function searchTools(q: string): Promise<SearchResult> {
   try {
-    const url = `${REGISTRY_URL}/api/search?q=${encodeURIComponent(q)}&limit=50`;
+    const url = `/api/search?q=${encodeURIComponent(q)}&limit=50`;
     const res = await fetch(url, { next: { revalidate: 30 } });
     if (!res.ok) return { tools: [], total: 0, query: q, took: 0 };
     return res.json();
