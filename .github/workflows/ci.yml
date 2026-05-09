@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   lint:
@@ -68,7 +68,7 @@ jobs:
           CI: true
 
   deploy-registry:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [lint, typecheck, build, test]
     runs-on: ubuntu-latest
     steps:
