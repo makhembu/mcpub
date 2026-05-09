@@ -63,7 +63,7 @@ function rowToTool(row: any): MCPTool {
 async function handleSearch(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   const query = url.searchParams.get('q') || '';
-  const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 50);
+  const limit = Math.min(parseInt(url.searchParams.get('limit') || '10', 10), 2000);
   const categoryFilter = url.searchParams.get('category');
   const offset = parseInt(url.searchParams.get('offset') || '0', 10);
   const startTime = Date.now();

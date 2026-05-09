@@ -22,7 +22,8 @@ interface SearchResult {
 
 async function searchTools(q: string): Promise<SearchResult> {
   try {
-    const url = `${REGISTRY_URL}/api/search?q=${encodeURIComponent(q)}&limit=50`;
+    const limit = q ? 50 : 2000;
+    const url = `${REGISTRY_URL}/api/search?q=${encodeURIComponent(q)}&limit=${limit}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return { tools: [], total: 0, query: q, took: 0 };
     return res.json();
