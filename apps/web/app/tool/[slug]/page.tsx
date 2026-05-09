@@ -1,4 +1,6 @@
-import { CopyButton } from './copy-button.js';
+import { CopyButton } from './copy-button';
+
+export const dynamic = 'force-dynamic';
 
 const REGISTRY_URL = process.env.REGISTRY_URL || 'https://mcpub-registry.shelflix.workers.dev';
 const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL || 'https://mcpub-web.vercel.app';
@@ -26,7 +28,7 @@ interface Tool {
 
 async function getTool(slug: string): Promise<Tool | null> {
   try {
-    const res = await fetch(`${REGISTRY_URL}/api/tools/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${REGISTRY_URL}/api/tools/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return res.json();
   } catch {
