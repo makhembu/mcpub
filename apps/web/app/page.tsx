@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 interface Tool {
   slug: string;
   name: string;
@@ -19,7 +21,7 @@ interface SearchResult {
 async function searchTools(q: string): Promise<SearchResult> {
   try {
     const url = `/api/search?q=${encodeURIComponent(q)}&limit=12`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return { tools: [], total: 0, took: 0, query: q };
     return res.json();
   } catch {
