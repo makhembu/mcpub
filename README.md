@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tools-1,574-8A2BE2" alt="1,574 tools"/>
+  <img src="https://img.shields.io/badge/tools-1,234-8A2BE2" alt="1,234 tools"/>
   <img src="https://img.shields.io/badge/categories-19-blue" alt="19 categories"/>
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"/>
 </p>
@@ -33,7 +33,7 @@
 
 ## ✨ Features
 
-- **🔍 Search** — 1,574 MCP tools indexed across 19 categories
+- **🔍 Search** — 1,234 MCP tools indexed across 19 categories
 - **📦 Install** — One-command install with `npx mcpub install <tool>`
 - **🔒 Security** — Built-in scanner with 17 detection patterns across 5 categories
 - **🔄 Compatibility** — See which tools work with OpenAI SDK, Anthropic, LangChain, Cursor
@@ -58,11 +58,11 @@ npx mcpub scan my-tool
 
 ## 📊 Registry Stats
 
-The registry comes pre-populated with **1,574 MCP tools** discovered from GitHub and npm:
+The registry comes pre-populated with **1,234 MCP tools** discovered from GitHub and npm:
 
 | Stat | Count |
 |------|-------|
-| Total tools | 1,574 |
+| Total tools | 1,234 |
 | With GitHub stars | 993 |
 | With npm packages | 617 |
 | With > 100 stars | 697 |
@@ -96,7 +96,7 @@ The registry comes pre-populated with **1,574 MCP tools** discovered from GitHub
 
 ## 🏆 Top 100 Tools
 
-The registry ships with **1,574 MCP tools** pre-scraped from GitHub and npm. Here are the top 100 by stars:
+The registry ships with **1,234 MCP tools** pre-scraped from GitHub and npm. Here are the top 100 by stars:
 
 | # | Tool | Description | ⭐ Stars | Package |
 |---|---|---|---|---|
