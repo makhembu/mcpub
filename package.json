@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "pnpm --recursive run dev",
     "build": "pnpm --recursive run build",
-    "cli": "node apps/cli/dist/index.mjs",
+    "cli": "node apps/cli/dist/index.js",
     "discover": "npx tsx scripts/discover.ts",
     "seed-from-file": "npx tsx scripts/seed-from-file.ts",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",

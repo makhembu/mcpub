@@ -10,6 +10,7 @@ const config = new Conf<RegistryConfig>({
 });
 
 export async function getRegistryUrl(): Promise<string> {
+  if (process.env.REGISTRY_URL) return process.env.REGISTRY_URL;
   return config.get('registryUrl');
 }
 
