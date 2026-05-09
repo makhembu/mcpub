@@ -8,13 +8,13 @@ function deriveInstallConfig(tool: any): MCPInstallConfig | undefined {
   if (tool.py_package) {
     return { type: 'uvx', command: 'uvx', args: [tool.py_package] };
   }
-  if (tool.install_command) {
+  if (tool.install_command && !tool.install_command.includes('mcpub install')) {
     const parts = tool.install_command.split(' ');
     const cmd = parts[0];
     const type = cmd === 'npx' ? 'npx' : cmd === 'uvx' ? 'uvx' : cmd === 'node' ? 'node' : cmd === 'python' ? 'python' : 'docker';
     return { type: type as MCPInstallConfig['type'], command: cmd, args: parts.slice(1) };
   }
-  return undefined;
+  return { type: 'npx', command: 'npx', args: ['-y', tool.slug] };
 }
 
 export interface Env {
@@ -33,6 +33,13 @@ function json(data: any, status = 200): Response {
       'Access-Control-Allow-Headers': 'Content-Type',
     },
   });
+}
+
+function cleanInstallCommand(row: any): string | null {
+  const cmd = row.install_command;
+  if (!cmd) return null;
+  if (cmd.includes('mcpub install')) return null;
+  return cmd;
 }
 
 function rowToTool(row: any): MCPTool {
@@ -55,7 +62,7 @@ function rowToTool(row: any): MCPTool {
     categories: JSON.parse(row.categories || '[]'),
     compatibility: JSON.parse(row.compatibility || '{}'),
     securityScore: row.security_score,
-    installCommand: row.install_command,
+    installCommand: cleanInstallCommand(row),
     installConfig: deriveInstallConfig(row),
   };
 }
