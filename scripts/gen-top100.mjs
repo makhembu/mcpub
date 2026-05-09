@@ -10,7 +10,8 @@ md += '| # | Tool | Description | \u2B50 Stars | Package |\n|---|---|---|---|---
 top100.forEach((t, i) => {
   const pkg = t.npmPackage ? '`' + t.npmPackage + '`' : (t.pyPackage ? '`' + t.pyPackage + '`' : '\u2014');
   const desc = t.shortDescription.replace(/\|/g, '\\|').slice(0, 55).trim();
-  md += '| ' + (i + 1) + ' | **' + t.name + '** | ' + desc + ' | ' + t.stars + ' | ' + pkg + ' |\n';
+  const link = t.githubUrl || '#';
+  md += '| ' + (i + 1) + ' | [' + t.name + '](' + link + ') | ' + desc + ' | ' + t.stars + ' | ' + pkg + ' |\n';
 });
 
 writeFileSync('scripts/top100-table.md', md);
