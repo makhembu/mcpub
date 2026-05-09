@@ -130,7 +130,7 @@ export default async function HomePage() {
       <div style={{ textAlign: 'center', marginTop: 48, padding: 24, borderTop: '1px solid #e5e7eb' }}>
         <p style={{ color: '#9ca3af', fontSize: 14 }}>
           Built with ❤️ for the MCP ecosystem · MIT License ·{' '}
-          <a href="https://github.com/mcpub/mcpub" style={{ color: '#3b82f6' }}>GitHub</a>
+          <a href="https://github.com/makhembu/mcpub" style={{ color: '#3b82f6' }}>GitHub</a>
         </p>
       </div>
     </div>

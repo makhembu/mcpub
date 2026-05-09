@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <a href="/" style={{ textDecoration: 'none', color: '#000', fontWeight: 700, fontSize: 20 }}>⚡ MCPHub</a>
           <span style={{ color: '#6b7280', fontSize: 14 }}>— The npm for AI Tools</span>
           <div style={{ marginLeft: 'auto', display: 'flex', gap: 16 }}>
-            <a href="https://github.com/mcpub/mcpub" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14 }}>GitHub</a>
+            <a href="https://github.com/makhembu/mcpub" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14 }}>GitHub</a>
             <a href="/search" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14 }}>Search</a>
           </div>
         </header>
