@@ -7,6 +7,13 @@ export interface FrameworkCompat {
   cursor: 'native' | 'adapter' | 'unknown' | 'none';
 }
 
+export interface MCPInstallConfig {
+  type: 'npx' | 'uvx' | 'node' | 'python' | 'docker';
+  command: string;
+  args: string[];
+  env?: Record<string, string>;
+}
+
 export interface MCPTool {
   id: string;
   slug: string;
@@ -27,6 +34,7 @@ export interface MCPTool {
   compatibility: FrameworkCompat;
   securityScore: number | null;
   installCommand: string;
+  installConfig?: MCPInstallConfig;
 }
 
 export interface ScanResult {
@@ -56,4 +64,12 @@ export interface SearchResult {
 export interface RegistryConfig {
   registryUrl: string;
   cacheDir: string;
+}
+
+export type ClientType = 'claude-desktop' | 'cursor' | 'windsurf' | 'opencode';
+
+export interface InstallTarget {
+  client: ClientType;
+  configPath: string;
+  detected: boolean;
 }

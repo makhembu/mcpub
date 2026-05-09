@@ -208,7 +208,7 @@ The registry ships with **1,574 MCP tools** pre-scraped from GitHub and npm. Her
 | Command | Description |
 |---------|-------------|
 | `mcpub search [query]` | Search the MCP tool registry |
-| `mcpub install <name>` | Look up a tool and show install instructions |
+| `mcpub install <name>` | Install a tool to Claude Desktop, Cursor, Windsurf, or OpenCode |
 | `mcpub info <name>` | Show detailed tool info with compatibility badges |
 | `mcpub scan [target]` | Security scan a tool, file, or local config |
 
@@ -241,8 +241,22 @@ $ npx mcpub install playwright
 
 ✔ Security score: 92/100
 
-  Install command:
-  $ npx -y @playwright/mcp
+> Install Playwright MCP to which clients?
+  ◻  Claude Desktop   (detected)
+  ◼  Cursor           (detected)
+  ◻  Windsurf
+  ◻  OpenCode
+
+✔ Cursor: written to /Users/you/project/.cursor/mcp.json
+   → Restart Cursor or reload window (Cmd/Ctrl+Shift+P → Developer: Reload Window)
+
+Done.
+
+# Skip prompts: auto-install to all detected clients
+$ npx mcpub install playwright -y
+
+# Target specific client
+$ npx mcpub install playwright --client claude-desktop,cursor
 ```
 
 ## 🌐 Web UI

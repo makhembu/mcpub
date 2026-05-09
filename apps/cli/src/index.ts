@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { installCommand } from './commands/install.js';
+import { uninstallCommand } from './commands/uninstall.js';
+import { listCommand } from './commands/list.js';
 import { searchCommand } from './commands/search.js';
 import { scanCommand } from './commands/scan.js';
 import { infoCommand } from './commands/info.js';
@@ -37,11 +39,23 @@ program
 
 program
   .command('install')
-  .description('Install an MCP tool')
+  .description('Install an MCP tool to your configured MCP clients')
   .argument('<name>', 'Tool name or slug to install')
-  .option('-y, --yes', 'Skip confirmation prompt')
+  .option('-y, --yes', 'Skip confirmation prompts')
   .option('--no-scan', 'Skip security scan before install')
   .action(installCommand);
+
+program
+  .command('uninstall')
+  .description('Remove an MCP tool from all configured clients')
+  .argument('<name>', 'Tool name or slug to uninstall')
+  .option('-y, --yes', 'Skip confirmation prompts')
+  .action(uninstallCommand);
+
+program
+  .command('list')
+  .description('List all installed MCP tools across configured clients')
+  .action(listCommand);
 
 program
   .command('info')

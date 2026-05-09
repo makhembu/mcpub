@@ -1,5 +1,21 @@
 import { handleSeed } from './seed.js';
-import type { MCPTool } from '@mcpub/shared';
+import type { MCPTool, MCPInstallConfig } from '@mcpub/shared';
+
+function deriveInstallConfig(tool: any): MCPInstallConfig | undefined {
+  if (tool.npm_package) {
+    return { type: 'npx', command: 'npx', args: ['-y', tool.npm_package] };
+  }
+  if (tool.py_package) {
+    return { type: 'uvx', command: 'uvx', args: [tool.py_package] };
+  }
+  if (tool.install_command) {
+    const parts = tool.install_command.split(' ');
+    const cmd = parts[0];
+    const type = cmd === 'npx' ? 'npx' : cmd === 'uvx' ? 'uvx' : cmd === 'node' ? 'node' : cmd === 'python' ? 'python' : 'docker';
+    return { type: type as MCPInstallConfig['type'], command: cmd, args: parts.slice(1) };
+  }
+  return undefined;
+}
 
 export interface Env {
   DB: D1Database;
@@ -40,6 +56,7 @@ function rowToTool(row: any): MCPTool {
     compatibility: JSON.parse(row.compatibility || '{}'),
     securityScore: row.security_score,
     installCommand: row.install_command,
+    installConfig: deriveInstallConfig(row),
   };
 }
 
