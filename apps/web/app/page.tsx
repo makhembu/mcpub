@@ -1,5 +1,7 @@
 export const dynamic = 'force-dynamic';
 
+const REGISTRY_URL = process.env.REGISTRY_URL || 'https://mcpub-registry.shelflix.workers.dev';
+
 interface Tool {
   slug: string;
   name: string;
@@ -20,7 +22,7 @@ interface SearchResult {
 
 async function searchTools(q: string): Promise<SearchResult> {
   try {
-    const url = `/api/search?q=${encodeURIComponent(q)}&limit=12`;
+    const url = `${REGISTRY_URL}/api/search?q=${encodeURIComponent(q)}&limit=12`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return { tools: [], total: 0, took: 0, query: q };
     return res.json();
