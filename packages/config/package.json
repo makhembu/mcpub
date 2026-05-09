@@ -1,0 +1,35 @@
+{
+  "name": "@mcpub/config",
+  "version": "0.1.0",
+  "description": "Detect MCP clients and manage their config files — Claude Desktop, Cursor, Windsurf, Continue, VS Code",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc && node build-cjs.mjs",
+    "dev": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude-desktop",
+    "cursor",
+    "windsurf",
+    "mcp-config"
+  ]
+}

@@ -13,6 +13,9 @@ importers:
       '@clack/prompts':
         specifier: ^0.9.0
         version: 0.9.1
+      '@mcpub/config':
+        specifier: workspace:*
+        version: link:../../packages/config
       '@mcpub/security':
         specifier: workspace:*
         version: link:../../packages/security
@@ -85,6 +88,15 @@ importers:
       '@types/react':
         specifier: ^19.1.0
         version: 19.2.14
+      typescript:
+        specifier: ^5.7.0
+        version: 5.9.3
+
+  packages/config:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.0.0
+        version: 22.19.18
       typescript:
         specifier: ^5.7.0
         version: 5.9.3

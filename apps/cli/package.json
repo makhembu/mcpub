@@ -14,6 +14,7 @@
   "dependencies": {
     "@mcpub/shared": "workspace:*",
     "@mcpub/security": "workspace:*",
+    "@mcpub/config": "workspace:*",
     "@clack/prompts": "^0.9.0",
     "commander": "^12.0.0",
     "conf": "^13.1.0",

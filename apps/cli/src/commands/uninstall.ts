@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { confirm, select, isCancel } from '@clack/prompts';
-import type { MCPClientConfig } from '@mcpub/shared';
-import { detectMCPClients, removeToolFromConfig, listInstalledTools } from '@mcpub/shared';
+import type { MCPClientConfig } from '@mcpub/config';
+import { detectMCPClients, removeToolFromConfig, listInstalledTools } from '@mcpub/config';
 
 interface UninstallOptions {
   yes?: boolean;

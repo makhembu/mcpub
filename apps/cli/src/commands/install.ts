@@ -1,8 +1,9 @@
 import ora from 'ora';
 import chalk from 'chalk';
 import { confirm, select, isCancel } from '@clack/prompts';
-import type { MCPTool, MCPClientConfig } from '@mcpub/shared';
-import { detectMCPClients, addToolToConfig } from '@mcpub/shared';
+import type { MCPTool } from '@mcpub/shared';
+import type { MCPClientConfig } from '@mcpub/config';
+import { detectMCPClients, addToolToConfig } from '@mcpub/config';
 import { getRegistryUrl } from '../lib/registry.js';
 import { scanTool } from '../lib/scan.js';
 

@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { detectMCPClients, listInstalledTools } from '@mcpub/shared';
+import { detectMCPClients, listInstalledTools } from '@mcpub/config';
 
 export async function listCommand() {
   const clients = detectMCPClients();
