@@ -5,5 +5,13 @@ dist/
 *.tsbuildinfo
 .env
 .env.local
+.env.*.local
 .wrangler/
 .vite/
+*.log
+data/
+.DS_Store
+out/
+*.tsdump
+coverage/
+.temp/

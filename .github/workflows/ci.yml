@@ -7,6 +7,18 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm lint
+
   typecheck:
     runs-on: ubuntu-latest
     steps:
@@ -20,6 +32,7 @@ jobs:
       - run: npx tsc --noEmit -p packages/shared/tsconfig.json
       - run: npx tsc --noEmit -p packages/security/tsconfig.json
       - run: npx tsc --noEmit -p apps/cli/tsconfig.json
+      - run: npx tsc --noEmit -p apps/registry-api/tsconfig.json
 
   build:
     runs-on: ubuntu-latest
@@ -37,6 +50,7 @@ jobs:
       - run: pnpm --filter @mcpub/web build
 
   test:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -46,14 +60,16 @@ jobs:
           node-version: 22
           cache: 'pnpm'
       - run: pnpm install
+      - name: Build dependencies
+        run: pnpm --filter @mcpub/shared build && pnpm --filter @mcpub/security build && pnpm --filter @mcpub/cli build
       - name: Test CLI runs
-        run: node apps/cli/dist/index.js --help
+        run: node apps/cli/dist/index.mjs --help
         env:
           CI: true
 
   deploy-registry:
     if: github.ref == 'refs/heads/main'
-    needs: [typecheck, build, test]
+    needs: [lint, typecheck, build, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -63,6 +79,11 @@ jobs:
           node-version: 22
           cache: 'pnpm'
       - run: pnpm install
+      - name: Run D1 migrations
+        working-directory: apps/registry-api
+        run: npx wrangler d1 execute mcpub-registry --file=./schema.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       - name: Deploy Registry API
         working-directory: apps/registry-api
         run: npx wrangler deploy
