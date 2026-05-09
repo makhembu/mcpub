@@ -134,6 +134,79 @@ async function handleScan(request: Request, env: Env, slug: string): Promise<Res
   });
 }
 
+function renderBadge(
+  label: string,
+  message: string,
+  color: string,
+): string {
+  const labelWidth = label.length * 7 + 16;
+  const messageWidth = message.length * 7 + 16;
+  const totalWidth = labelWidth + messageWidth;
+  const labelEnd = labelWidth;
+  const borderRadius = 3;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${totalWidth}" height="20" role="img" aria-label="${label}: ${message}">
+  <title>${label}: ${message}</title>
+  <g shape-rendering="crispEdges">
+    <rect x="0" y="0" width="${labelEnd}" height="20" fill="#555"/>
+    <rect x="${labelEnd}" y="0" width="${messageWidth}" height="20" fill="${color}"/>
+    <rect x="0" y="0" width="${totalWidth}" height="20" fill="url(#s)"/>
+  </g>
+  <defs>
+    <linearGradient id="s" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".07"/>
+      <stop offset="1" stop-color="#fff" stop-opacity=".0"/>
+    </linearGradient>
+  </defs>
+  <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+    <text x="${labelEnd / 2}" y="14">${escapeXml(label)}</text>
+    <text x="${labelEnd + messageWidth / 2}" y="14">${escapeXml(message)}</text>
+  </g>
+</svg>`;
+}
+
+function escapeXml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function svg(data: string, status = 200): Response {
+  return new Response(data, {
+    status,
+    headers: {
+      'content-type': 'image/svg+xml',
+      'cache-control': 'max-age=3600',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+}
+
+async function handleBadge(request: Request, env: Env, slug: string): Promise<Response> {
+  const tool = await env.DB.prepare('SELECT * FROM tools WHERE slug = ?').bind(slug).first<any>();
+  if (!tool) {
+    return svg(renderBadge('MCPub', 'not found', '#e05d44'), 404);
+  }
+
+  const stars = tool.stars || 0;
+  const score = tool.security_score;
+  const rightText = score !== null && score !== undefined
+    ? `⭐ ${formatStars(stars)} · ${score}/100`
+    : `⭐ ${formatStars(stars)}`;
+
+  let color = '#4c1';
+  if (score !== null && score !== undefined) {
+    if (score >= 80) color = '#4c1';
+    else if (score >= 50) color = '#dfb317';
+    else color = '#e05d44';
+  }
+
+  return svg(renderBadge('MCPub', rightText, color));
+}
+
+function formatStars(n: number): string {
+  if (n >= 1000) return `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k`;
+  return String(n);
+}
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -157,6 +230,13 @@ export default {
 
       if (path === '/api/search' && method === 'GET') {
         return handleSearch(request, env);
+      }
+
+      if (method === 'GET') {
+        const badgeMatch = path.match(/^\/badge\/(.+)\.svg$/);
+        if (badgeMatch) {
+          return handleBadge(request, env, badgeMatch[1]);
+        }
       }
 
       if (path.startsWith('/api/tools/') && method === 'GET') {

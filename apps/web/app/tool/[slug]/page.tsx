@@ -1,4 +1,7 @@
+import { CopyButton } from './copy-button.js';
+
 const REGISTRY_URL = process.env.REGISTRY_URL || 'https://mcpub-registry.shelflix.workers.dev';
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL || 'https://mcpub-web.vercel.app';
 
 interface Tool {
   slug: string;
@@ -116,6 +119,36 @@ export default async function ToolPage({ params }: { params: Promise<{ slug: str
         <code style={{ fontSize: 15, display: 'block', background: '#1f2937', color: '#e5e7eb', padding: '12px 16px', borderRadius: 8 }}>
           {tool.installCommand || `npx mcpub install ${tool.slug}`}
         </code>
+      </div>
+
+      <div style={{
+        background: '#f9fafb',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 24,
+      }}>
+        <h3 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 8px', textTransform: 'uppercase', color: '#6b7280' }}>Add to README</h3>
+        <img
+          src={`${REGISTRY_URL}/badge/${tool.slug}.svg`}
+          alt={`MCPub: ${tool.name}`}
+          style={{ marginBottom: 12, display: 'block' }}
+        />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <code style={{
+            fontSize: 13,
+            background: '#1f2937',
+            color: '#e5e7eb',
+            padding: '8px 12px',
+            borderRadius: 6,
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {'[![MCPub](' + REGISTRY_URL + '/badge/' + tool.slug + '.svg)](' + WEB_URL + '/tool/' + tool.slug + ')'}
+          </code>
+          <CopyButton text={'[![MCPub](' + REGISTRY_URL + '/badge/' + tool.slug + '.svg)](' + WEB_URL + '/tool/' + tool.slug + ')'} />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
