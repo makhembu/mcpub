@@ -9,7 +9,10 @@ md += '| # | Tool | Description | \u2B50 Stars | Package |\n|---|---|---|---|---
 
 top100.forEach((t, i) => {
   const pkg = t.npmPackage ? '`' + t.npmPackage + '`' : (t.pyPackage ? '`' + t.pyPackage + '`' : '\u2014');
-  const desc = t.shortDescription.replace(/\|/g, '\\|').slice(0, 55).trim();
+  let desc = t.shortDescription.replace(/\|/g, '\\|');
+  if (desc.length > 100) {
+    desc = desc.slice(0, 100).split(' ').slice(0, -1).join(' ') + '...';
+  }
   const link = t.githubUrl || '#';
   md += '| ' + (i + 1) + ' | [' + t.name + '](' + link + ') | ' + desc + ' | ' + t.stars + ' | ' + pkg + ' |\n';
 });
