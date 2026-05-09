@@ -20,6 +20,17 @@ interface SearchResult {
   took: number;
 }
 
+const styles = {
+  card: {
+    border: '1px solid #e5e7eb',
+    borderRadius: 12,
+    padding: 20,
+    textDecoration: 'none',
+    color: 'inherit',
+    display: 'block',
+  } as const,
+};
+
 async function searchTools(q: string): Promise<SearchResult> {
   try {
     const url = `${REGISTRY_URL}/api/search?q=${encodeURIComponent(q)}&limit=12`;
@@ -36,6 +47,7 @@ export default async function HomePage() {
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '40px 24px' }}>
+      <style>{`.tool-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}`}</style>
       <div style={{ textAlign: 'center', marginBottom: 48 }}>
         <h1 style={{ fontSize: 40, fontWeight: 800, margin: '0 0 8px' }}>⚡ MCPHub</h1>
         <p style={{ fontSize: 18, color: '#6b7280', margin: '0 0 32px' }}>
@@ -63,16 +75,8 @@ export default async function HomePage() {
           <a
             key={tool.slug}
             href={`/tool/${tool.slug}`}
-            style={{
-              border: '1px solid #e5e7eb',
-              borderRadius: 12,
-              padding: 20,
-              textDecoration: 'none',
-              color: 'inherit',
-              transition: 'box-shadow 0.15s',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)')}
-            onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '')}
+            className="tool-card"
+            style={styles.card}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
               <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{tool.name}</h3>
