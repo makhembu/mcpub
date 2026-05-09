@@ -1,0 +1,24 @@
+{
+  "name": "@mcpub/registry-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "wrangler deploy --dry-run",
+    "db:create": "wrangler d1 create mcpub-registry",
+    "db:migrate": "wrangler d1 execute mcpub-registry --file=./schema.sql",
+    "db:seed": "wrangler d1 execute mcpub-registry --file=./seed.sql"
+  },
+  "dependencies": {
+    "@mcpub/shared": "workspace:*",
+    "@mcpub/security": "workspace:*",
+    "itty-router": "^5.0.18",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}

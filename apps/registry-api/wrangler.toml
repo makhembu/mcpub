@@ -1,0 +1,19 @@
+name = "mcpub-registry"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 database for tool storage
+[[d1_databases]]
+binding = "DB"
+database_name = "mcpub-registry"
+database_id = "mcpub-registry-local"
+
+# Vectorize for semantic search
+[[vectorize]]
+binding = "SEARCH_INDEX"
+index_name = "mcpub-tools"
+
+# AI binding for embeddings
+[ai]
+binding = "AI"

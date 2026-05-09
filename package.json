@@ -1,0 +1,17 @@
+{
+  "name": "mcpub",
+  "private": true,
+  "description": "MCPHub — The npm for AI Tools. One command to install, search, and secure MCP servers.",
+  "scripts": {
+    "dev": "pnpm --recursive run dev",
+    "build": "pnpm --recursive run build",
+    "cli": "node apps/cli/dist/index.mjs",
+    "discover": "npx tsx scripts/discover.ts",
+    "seed-from-file": "npx tsx scripts/seed-from-file.ts",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "lint": "eslint --ext .ts,.tsx apps/ packages/"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
